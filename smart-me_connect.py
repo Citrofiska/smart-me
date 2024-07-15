@@ -2,7 +2,8 @@ import requests
 import time
 import pandas as pd
 import datetime
-from pythonosc import udp_client
+import config
+# from pythonosc import udp_client
 
 def get_data_from_api(url, username, password):
 	try:
@@ -20,17 +21,9 @@ def get_data_from_api(url, username, password):
 		return None, None, None, None, None
 
 def is_css(power):
-    CSS_THRESHOLD = 2e-5  # found by experiments
-    return power < CSS_THRESHOLD
+	return power < config.CSS_THRESHOLD
 
 def main():
-
-	# Smart-me API
-	url = "https://api.smart-me.com/api/Devices/"
-	username = "" # your username at smart-me
-	password = "" # your password at smart-me
-	# Name of the file to save the data
-	save_file_name = "measured_energy_css.csv"
 
 	Voltage_list, Current_list, ActivePower_list, Energy_list = [], [], [], []
 	Time_list, State_list = [], []
@@ -42,7 +35,7 @@ def main():
 
 		print("-" * 30)
 
-		Voltage, Current, ActivePower, _, _ = get_data_from_api(url, username, password)
+		Voltage, Current, ActivePower, _, _ = get_data_from_api(config.url, config.username, config.password)
 		if ActivePower is None:
 			continue
 
@@ -73,7 +66,7 @@ def main():
 		Time_list.append(time_show)
 		State_list.append(state)
 
-		time.sleep(1)
+		time.sleep(config.interval)
 
 		# client.send_message("/smart-me/Voltage", Voltage)
 		# client.send_message("/smart-me/Current", Current)
@@ -88,7 +81,7 @@ def main():
 		'ActivePower': ActivePower_list,
 		'Energy': Energy_list
 	})
-	df.to_csv(save_file_name, index=False)
+	df.to_csv(config.save_file_name, index=False)
 	print("Final data saved to CSV file.")
 
 if __name__ == "__main__":
